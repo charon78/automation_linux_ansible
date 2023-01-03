@@ -1,0 +1,41 @@
+---
+- hosts: all
+  become: yes
+  become_method: enable
+  vars:
+    output: "change me"
+  tasks:
+
+  - name: Find is an user has sudo privileges
+    ansible.builtin.getent:
+      database: group
+      key: sudo
+      split: ':'
+    register: sudousers
+
+  - name: Filter message
+    debug:
+      msg: "{{ sudousers }}"
+
+  - name: What is my ansible_hostname
+    ansible.builtin.debug:
+      var: inventory_hostname
+
+  - name: build raport
+    lineinfile:
+      line: "Na Hoscie {{ inventory_hostname }} znajduja sie uzytkownicy sudo  {{ sudousers.ansible_facts.getent_group.sudo }}"
+      path: "{{ output }}"
+    delegate_to: localhost
+
+  - name: mail result
+    mail:
+      host: "change me"
+      port: "change me"
+      from: "change me"
+      to: "change me"
+      subject: "List of sudouser"
+      body: "change me"
+      attach:
+        - "change me"
+    delegate_to: localhost
+    run_once: true
