@@ -1,0 +1,34 @@
+---
+- hosts: all
+  become: yes
+  become_user: root
+  vars:
+    username: "XXX"
+  tasks:
+
+  - name: Get list all users
+    ansible.builtin.getent:
+      database: passwd
+
+  - debug:
+      var: getent_passwd
+
+  - name: Print the usernames
+    debug:
+      msg: "{{ getent_passwd | dict2items | map(attribute='key') | list }}"
+
+  - name: Disbale user
+    user:
+      name: "{{ username }}"
+      state: present
+      password_lock: true
+      shell: "/sbin/nologin"
+
+  - name: change primary group to blocked user
+    user:
+       name: "{{ username }}"
+       shell: /bin/bash
+       group: users
+
+  - name: delete users from sudo group
+    shell: deluser "{{ username }}" sudo
